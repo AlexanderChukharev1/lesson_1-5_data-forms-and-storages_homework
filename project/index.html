@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Домашняя работа по формам, JSON и Web Storage"
+    />
+    <title>Сохраненная карточка</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="script.js" defer></script>
+  </head>
+
+  <body>
+    <header class="page-header">
+      <a class="course-mark" href="#workspace">
+        <span class="course-mark__number">1—5</span>
+        <span class="course-mark__text">Разработка web-интерфейсов</span>
+      </a>
+
+      <span class="page-header__label">Домашняя работа</span>
+    </header>
+
+    <main class="page-shell">
+      <section class="intro" aria-labelledby="page-title">
+        <p class="intro__eyebrow">Формы и хранилища</p>
+        <h1 class="intro__title" id="page-title">Сохраненная карточка</h1>
+        <p class="intro__lead">
+          Выберите тему, настройте форму и самостоятельно свяжите ввод,
+          отображение и хранение данных.
+        </p>
+      </section>
+
+      <section class="workspace" id="workspace" aria-labelledby="workspace-title">
+        <header class="workspace__header">
+          <div>
+            <p class="workspace__kicker">Рабочая область</p>
+            <h2 class="workspace__title" id="workspace-title">Ваша тема</h2>
+          </div>
+
+          <p class="workspace__status" aria-live="polite">Данные еще не проверены</p>
+        </header>
+
+        <!-- Состояние 1: показывается, когда сохраненных данных нет. -->
+        <section class="app-state app-state--empty" data-state-panel="empty">
+          <p class="app-state__index">01</p>
+          <div class="app-state__content">
+            <h3 class="app-state__title">Карточка пока не создана</h3>
+            <p class="app-state__text">
+              Начните с формы. После сохранения это состояние должно смениться
+              просмотром карточки.
+            </p>
+            <button class="button button--primary" type="button" data-action="create">
+              Создать карточку
+            </button>
+          </div>
+        </section>
+
+        <!-- Состояние 2: студент дополняет форму под выбранную тему. -->
+        <section class="app-state app-state--editor" data-state-panel="editor" hidden>
+          <p class="app-state__index">02</p>
+
+          <form class="card-form">
+            <header class="card-form__header">
+              <div>
+                <p class="card-form__kicker">Редактирование</p>
+                <h3 class="card-form__title">Данные карточки</h3>
+              </div>
+              <p class="card-form__note">Добавьте еще минимум три осмысленных поля</p>
+            </header>
+
+            <!-- Это один пример связки label, id и name. Остальные поля создайте сами. -->
+            <div class="field">
+              <label class="field__label" for="card-title">Название</label>
+              <input
+                class="field__control"
+                id="card-title"
+                name="title"
+                type="text"
+                minlength="3"
+                placeholder="Например, Городской маршрут"
+                required
+              />
+              <span class="field__hint">Минимум 3 символа</span>
+            </div>
+
+            <!-- Добавьте поля, которые описывают именно вашу тему. -->
+
+            <div class="card-form__actions">
+              <button class="button button--primary" type="submit">
+                Сохранить карточку
+              </button>
+              <button class="button button--secondary" type="button" data-action="cancel">
+                Отменить
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <!-- Состояние 3: сюда нужно вывести все сохраненные значения. -->
+        <section class="app-state app-state--viewer" data-state-panel="viewer" hidden>
+          <p class="app-state__index">03</p>
+
+          <article class="saved-card">
+            <p class="saved-card__label">Сохраненная карточка</p>
+            <h3 class="saved-card__title">Название появится здесь</h3>
+
+            <dl class="saved-card__details">
+              <div class="saved-card__row">
+                <dt>Свойство</dt>
+                <dd>Значение</dd>
+              </div>
+              <!-- Добавьте строки или другую разметку для всех полей формы. -->
+            </dl>
+
+            <div class="saved-card__actions">
+              <button class="button button--primary" type="button" data-action="edit">
+                Редактировать
+              </button>
+              <button class="button button--danger" type="button" data-action="delete">
+                Удалить
+              </button>
+            </div>
+          </article>
+        </section>
+      </section>
+    </main>
+
+    <footer class="page-footer">
+      <span>НИУ ВШЭ · ДРИП</span>
+      <span>Форма → объект → JSON → хранилище → интерфейс</span>
+    </footer>
+  </body>
+</html>
