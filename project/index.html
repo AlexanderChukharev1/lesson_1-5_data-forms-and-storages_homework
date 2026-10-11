@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="ru">
   <head>
@@ -5,9 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Домашняя работа по формам, JSON и Web Storage"
+      content="Коллекция сохраненных карточек книг"
     />
-    <title>Сохраненная карточка</title>
+    <title>Сохраненные книги</title>
     <link rel="icon" href="data:," />
     <link rel="stylesheet" href="styles.css" />
     <script src="script.js" defer></script>
@@ -26,10 +27,10 @@
     <main class="page-shell">
       <section class="intro" aria-labelledby="page-title">
         <p class="intro__eyebrow">Формы и хранилища</p>
-        <h1 class="intro__title" id="page-title">Сохраненная карточка</h1>
+        <h1 class="intro__title" id="page-title">Сохраненные книги</h1>
         <p class="intro__lead">
-          Выберите тему, настройте форму и самостоятельно свяжите ввод,
-          отображение и хранение данных.
+          Создавайте карточки книг, редактируйте их и возвращайтесь
+          к незавершенному черновику.
         </p>
       </section>
 
@@ -37,20 +38,31 @@
         <header class="workspace__header">
           <div>
             <p class="workspace__kicker">Рабочая область</p>
-            <h2 class="workspace__title" id="workspace-title">Книга</h2>
+            <h2 class="workspace__title" id="workspace-title">Книги</h2>
           </div>
 
           <p class="workspace__status" aria-live="polite">Данные еще не проверены</p>
         </header>
 
+        <div class="draft-notice" id="draft-notice" hidden>
+          <p class="draft-notice__text">Есть несохраненный черновик книги</p>
+          <div class="draft-notice__actions">
+            <button class="button button--secondary" type="button" data-action="resume-draft">
+              Продолжить черновик
+            </button>
+            <button class="button button--secondary" type="button" data-action="discard-draft">
+              Удалить черновик
+            </button>
+          </div>
+        </div>
+
         <!-- Состояние 1: показывается, когда сохраненных данных нет. -->
         <section class="app-state app-state--empty" data-state-panel="empty">
           <p class="app-state__index">01</p>
           <div class="app-state__content">
-            <h3 class="app-state__title">Карточка пока не создана</h3>
+            <h3 class="app-state__title">Книг пока нет</h3>
             <p class="app-state__text">
-              Начните с формы. После сохранения это состояние должно смениться
-              просмотром карточки.
+              Создайте первую карточку книги.
             </p>
             <button class="button button--primary" type="button" data-action="create">
               Создать карточку
@@ -58,9 +70,23 @@
           </div>
         </section>
 
+        <!-- Состояние коллекции: список сохраненных книг. -->
+        <section class="app-state app-state--collection" data-state-panel="collection" hidden>
+          <p class="app-state__index">02</p>
+          <div class="collection">
+            <div class="collection__header">
+              <h3 class="collection__title">Мои книги</h3>
+              <button class="button button--primary" type="button" data-action="create">
+                Добавить книгу
+              </button>
+            </div>
+            <ul class="collection__list" id="book-list"></ul>
+          </div>
+        </section>
+
         <!-- Состояние 2: студент дополняет форму под выбранную тему. -->
         <section class="app-state app-state--editor" data-state-panel="editor" hidden>
-          <p class="app-state__index">02</p>
+          <p class="app-state__index">03</p>
 
           <form class="card-form">
             <header class="card-form__header">
@@ -71,6 +97,7 @@
               <p class="card-form__note">Все четыре поля обязательны</p>
             </header>
 
+            <!-- Это один пример связки label, id и name. Остальные поля создайте сами. -->
             <div class="field">
               <label class="field__label" for="card-title">Название книги</label>
               <input
@@ -85,6 +112,7 @@
               <span class="field__hint">Минимум 3 символа</span>
             </div>
 
+            <!-- Добавьте поля, которые описывают именно вашу тему. -->
             <div class="field">
               <label class="field__label" for="card-author">Автор</label>
               <input
@@ -136,7 +164,7 @@
 
         <!-- Состояние 3: сюда нужно вывести все сохраненные значения. -->
         <section class="app-state app-state--viewer" data-state-panel="viewer" hidden>
-          <p class="app-state__index">03</p>
+          <p class="app-state__index">04</p>
 
           <article class="saved-card">
             <p class="saved-card__label">Сохраненная книга</p>
@@ -147,12 +175,11 @@
                 <dt>Автор</dt>
                 <dd id="saved-author"></dd>
               </div>
-
+              <!-- Добавьте строки или другую разметку для всех полей формы. -->
               <div class="saved-card__row">
                 <dt>Жанр</dt>
                 <dd id="saved-genre"></dd>
               </div>
-
               <div class="saved-card__row">
                 <dt>Год издания</dt>
                 <dd id="saved-year"></dd>
@@ -163,12 +190,16 @@
               <button class="button button--primary" type="button" data-action="edit">
                 Редактировать
               </button>
+              <button class="button button--secondary" type="button" data-action="back">
+                К списку
+              </button>
               <button class="button button--danger" type="button" data-action="delete">
                 Удалить
               </button>
             </div>
           </article>
         </section>
+      </section>
     </main>
 
     <footer class="page-footer">
