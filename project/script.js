@@ -3,7 +3,9 @@
 
 console.log("Стартовый проект подключен")
 
+
 const STORAGE_KEY = "saved-book"
+const DRAFT_KEY = "book-draft"
 
 const form = document.querySelector(".card-form")
 const panels = document.querySelectorAll("[data-state-panel]")
@@ -41,6 +43,32 @@ function fillForm(data) {
   form.elements.namedItem("year").value = data.year
 }
 
+function restoreDraft() {
+  const savedDraft = sessionStorage.getItem(DRAFT_KEY)
+
+  if (savedDraft === null) {
+    return
+  }
+
+  try {
+    const draft = JSON.parse(savedDraft)
+
+    if (
+      !draft ||
+      typeof draft.title !== "string" ||
+      typeof draft.author !== "string" ||
+      typeof draft.genre !== "string" ||
+      typeof draft.year !== "string"
+    ) {
+      throw new Error("Некорректный черновик")
+    }
+
+    fillForm(draft)
+  } catch {
+    sessionStorage.removeItem(DRAFT_KEY)
+  }
+}
+
 function openEditor() {
   form.reset()
 
@@ -48,11 +76,18 @@ function openEditor() {
     fillForm(book)
   }
 
+  restoreDraft()
   showState("editor")
 }
 
 document.querySelector('[data-action="create"]').addEventListener("click", openEditor)
 document.querySelector('[data-action="edit"]').addEventListener("click", openEditor)
+
+form.addEventListener("input", () => {
+  const draft = Object.fromEntries(new FormData(form))
+
+  sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft))
+})
 
 form.addEventListener("submit", (event) => {
   event.preventDefault()
@@ -67,12 +102,14 @@ form.addEventListener("submit", (event) => {
   }
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify(newBook))
+  sessionStorage.removeItem(DRAFT_KEY)
 
   book = newBook
   showBook()
 })
 
 document.querySelector('[data-action="cancel"]').addEventListener("click", () => {
+  sessionStorage.removeItem(DRAFT_KEY)
   form.reset()
 
   if (book) {
@@ -84,6 +121,7 @@ document.querySelector('[data-action="cancel"]').addEventListener("click", () =>
 
 document.querySelector('[data-action="delete"]').addEventListener("click", () => {
   localStorage.removeItem(STORAGE_KEY)
+  sessionStorage.removeItem(DRAFT_KEY)
 
   book = null
   form.reset()
