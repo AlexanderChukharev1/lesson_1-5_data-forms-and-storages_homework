@@ -44,6 +44,10 @@
           <p class="workspace__status" aria-live="polite">Данные еще не проверены</p>
         </header>
 
+        <div class="draft-notice" id="expiry-notice" role="status" hidden>
+          <p class="draft-notice__text" id="expiry-text"></p>
+        </div>
+
         <div class="draft-notice" id="draft-notice" hidden>
           <p class="draft-notice__text">Есть несохраненный черновик книги</p>
           <div class="draft-notice__actions">
@@ -147,8 +151,10 @@
                 type="number"
                 min="1"
                 placeholder="Например, 1967"
+                aria-describedby="year-error"
                 required
               />
+              <span class="field__hint field__hint--error" id="year-error" hidden></span>
             </div>
 
             <div class="card-form__actions">

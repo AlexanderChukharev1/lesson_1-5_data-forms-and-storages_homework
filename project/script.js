@@ -4,15 +4,23 @@
 console.log("Стартовый проект подключен")
 
 
+
 const STORAGE_KEY = "saved-books"
 const OLD_STORAGE_KEY = "saved-book"
 const DRAFT_KEY = "book-draft"
+const BOOK_LIFETIME_MS = 30 * 24 * 60 * 60 * 1000
 
 const form = document.querySelector(".card-form")
 const panels = document.querySelectorAll("[data-state-panel]")
 const status = document.querySelector(".workspace__status")
 const bookList = document.querySelector("#book-list")
 const draftNotice = document.querySelector("#draft-notice")
+const expiryNotice = document.querySelector("#expiry-notice")
+const expiryText = document.querySelector("#expiry-text")
+const yearInput = document.querySelector("#card-year")
+const yearError = document.querySelector("#year-error")
+
+let expiredCount = 0
 
 function isValidBook(book) {
   return book !== null && typeof book === "object" &&
@@ -20,7 +28,8 @@ function isValidBook(book) {
     typeof book.title === "string" && book.title.trim().length >= 3 &&
     typeof book.author === "string" && book.author.trim().length >= 2 &&
     typeof book.genre === "string" && book.genre.length > 0 &&
-    Number.isInteger(book.year) && book.year >= 1
+    Number.isInteger(book.year) && book.year >= 1 &&
+    Number.isInteger(book.savedAt) && book.savedAt >= 0
 }
 
 function loadBooks() {
@@ -32,20 +41,37 @@ function loadBooks() {
   try {
     const data = JSON.parse(saved ?? oldSaved)
     const loaded = Array.isArray(data) ? data : [{ ...data, id: 1 }]
+    const now = Date.now()
+
+    const datedBooks = loaded.map((book) => ({
+      ...book,
+      savedAt: book.savedAt ?? now
+    }))
 
     if (
-      !loaded.every(isValidBook) ||
-      new Set(loaded.map((item) => item.id)).size !== loaded.length
+      !datedBooks.every(isValidBook) ||
+      new Set(datedBooks.map((book) => book.id)).size !== datedBooks.length
     ) {
       throw new Error("Некорректные данные книг")
     }
 
+    const activeBooks = datedBooks.filter(
+      (book) => now - book.savedAt < BOOK_LIFETIME_MS
+    )
+
+    expiredCount = datedBooks.length - activeBooks.length
+
+    if (activeBooks.length === 0) {
+      localStorage.removeItem(STORAGE_KEY)
+    } else {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(activeBooks))
+    }
+
     if (oldSaved !== null) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(loaded))
       localStorage.removeItem(OLD_STORAGE_KEY)
     }
 
-    return loaded
+    return activeBooks
   } catch {
     localStorage.removeItem(saved === null ? OLD_STORAGE_KEY : STORAGE_KEY)
     return []
@@ -57,6 +83,7 @@ let selectedId = null
 
 function readDraft() {
   const saved = sessionStorage.getItem(DRAFT_KEY)
+
   if (saved === null) return null
 
   try {
@@ -156,6 +183,19 @@ function fillForm(data) {
   form.elements.namedItem("year").value = data.year
 }
 
+function validateYear() {
+  const currentYear = new Date().getFullYear()
+  const year = Number(yearInput.value)
+
+  const message = yearInput.value !== "" && year > currentYear
+    ? `Год издания не может быть больше ${currentYear}`
+    : ""
+
+  yearInput.setCustomValidity(message)
+  yearError.textContent = message
+  yearError.hidden = message === ""
+}
+
 function openEditor(id = null) {
   const draft = readDraft()
 
@@ -172,7 +212,10 @@ function openEditor(id = null) {
   if (id !== null) {
     const book = books.find((item) => item.id === id)
 
-    if (!book) return showCollection()
+    if (!book) {
+      showCollection()
+      return
+    }
 
     fillForm(book)
   }
@@ -183,6 +226,7 @@ function openEditor(id = null) {
     fillForm(currentDraft.values)
   }
 
+  validateYear()
   showState("editor")
 }
 
@@ -209,6 +253,8 @@ document.querySelector('[data-action="discard-draft"]').addEventListener("click"
   updateDraftNotice()
 })
 
+yearInput.addEventListener("input", validateYear)
+
 form.addEventListener("input", () => {
   const values = Object.fromEntries(new FormData(form))
 
@@ -222,6 +268,9 @@ form.addEventListener("input", () => {
 
 form.addEventListener("submit", (event) => {
   event.preventDefault()
+  validateYear()
+
+  if (!form.reportValidity()) return
 
   const data = new FormData(form)
 
@@ -229,7 +278,8 @@ form.addEventListener("submit", (event) => {
     title: data.get("title").trim(),
     author: data.get("author").trim(),
     genre: data.get("genre"),
-    year: Number(data.get("year"))
+    year: Number(data.get("year")),
+    savedAt: Date.now()
   }
 
   if (selectedId === null) {
@@ -242,7 +292,10 @@ form.addEventListener("submit", (event) => {
   } else {
     const index = books.findIndex((book) => book.id === selectedId)
 
-    if (index === -1) return showCollection()
+    if (index === -1) {
+      showCollection()
+      return
+    }
 
     books[index] = {
       id: selectedId,
@@ -261,6 +314,7 @@ document.querySelector('[data-action="cancel"]').addEventListener("click", () =>
   sessionStorage.removeItem(DRAFT_KEY)
   updateDraftNotice()
   form.reset()
+  validateYear()
 
   if (selectedId !== null) {
     showBook(selectedId)
@@ -274,7 +328,6 @@ document.querySelector('[data-action="delete"]').addEventListener("click", () =>
 
   if (draft && draft.bookId === selectedId) {
     sessionStorage.removeItem(DRAFT_KEY)
-    updateDraftNotice()
   }
 
   books = books.filter((book) => book.id !== selectedId)
@@ -285,10 +338,19 @@ document.querySelector('[data-action="delete"]').addEventListener("click", () =>
     localStorage.setItem(STORAGE_KEY, JSON.stringify(books))
   }
 
+  updateDraftNotice()
   showCollection()
 })
 
 updateDraftNotice()
+
+if (expiredCount > 0) {
+  expiryText.textContent =
+    `Удалено устаревших книг: ${expiredCount}. ` +
+    "Срок хранения — 30 дней. Можно создать новую карточку."
+
+  expiryNotice.hidden = false
+}
 
 if (books.length === 1) {
   showBook(books[0].id)
