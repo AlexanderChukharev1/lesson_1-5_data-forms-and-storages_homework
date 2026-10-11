@@ -37,7 +37,7 @@
         <header class="workspace__header">
           <div>
             <p class="workspace__kicker">Рабочая область</p>
-            <h2 class="workspace__title" id="workspace-title">Ваша тема</h2>
+            <h2 class="workspace__title" id="workspace-title">Книга</h2>
           </div>
 
           <p class="workspace__status" aria-live="polite">Данные еще не проверены</p>
@@ -66,27 +66,62 @@
             <header class="card-form__header">
               <div>
                 <p class="card-form__kicker">Редактирование</p>
-                <h3 class="card-form__title">Данные карточки</h3>
+                <h3 class="card-form__title">Данные книги</h3>
               </div>
-              <p class="card-form__note">Добавьте еще минимум три осмысленных поля</p>
+              <p class="card-form__note">Все четыре поля обязательны</p>
             </header>
 
-            <!-- Это один пример связки label, id и name. Остальные поля создайте сами. -->
             <div class="field">
-              <label class="field__label" for="card-title">Название</label>
+              <label class="field__label" for="card-title">Название книги</label>
               <input
                 class="field__control"
                 id="card-title"
                 name="title"
                 type="text"
                 minlength="3"
-                placeholder="Например, Городской маршрут"
+                placeholder="Например, Мастер и Маргарита"
                 required
               />
               <span class="field__hint">Минимум 3 символа</span>
             </div>
 
-            <!-- Добавьте поля, которые описывают именно вашу тему. -->
+            <div class="field">
+              <label class="field__label" for="card-author">Автор</label>
+              <input
+                class="field__control"
+                id="card-author"
+                name="author"
+                type="text"
+                minlength="2"
+                placeholder="Например, Михаил Булгаков"
+                required
+              />
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="card-genre">Жанр</label>
+              <select class="field__control" id="card-genre" name="genre" required>
+                <option value="">Выберите жанр</option>
+                <option value="Роман">Роман</option>
+                <option value="Фантастика">Фантастика</option>
+                <option value="Детектив">Детектив</option>
+                <option value="Научная литература">Научная литература</option>
+                <option value="Другое">Другое</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="card-year">Год издания</label>
+              <input
+                class="field__control"
+                id="card-year"
+                name="year"
+                type="number"
+                min="1"
+                placeholder="Например, 1967"
+                required
+              />
+            </div>
 
             <div class="card-form__actions">
               <button class="button button--primary" type="submit">
@@ -104,15 +139,24 @@
           <p class="app-state__index">03</p>
 
           <article class="saved-card">
-            <p class="saved-card__label">Сохраненная карточка</p>
-            <h3 class="saved-card__title">Название появится здесь</h3>
+            <p class="saved-card__label">Сохраненная книга</p>
+            <h3 class="saved-card__title"></h3>
 
             <dl class="saved-card__details">
               <div class="saved-card__row">
-                <dt>Свойство</dt>
-                <dd>Значение</dd>
+                <dt>Автор</dt>
+                <dd id="saved-author"></dd>
               </div>
-              <!-- Добавьте строки или другую разметку для всех полей формы. -->
+
+              <div class="saved-card__row">
+                <dt>Жанр</dt>
+                <dd id="saved-genre"></dd>
+              </div>
+
+              <div class="saved-card__row">
+                <dt>Год издания</dt>
+                <dd id="saved-year"></dd>
+              </div>
             </dl>
 
             <div class="saved-card__actions">
@@ -125,7 +169,6 @@
             </div>
           </article>
         </section>
-      </section>
     </main>
 
     <footer class="page-footer">
